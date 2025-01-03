@@ -1,5 +1,5 @@
-export interface AppResponse {
+export interface AppResponse<T> {
   success: boolean;
-  result?: any;
+  result?: T | any;
   message?: string;
 }
