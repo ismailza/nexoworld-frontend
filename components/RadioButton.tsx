@@ -1,13 +1,13 @@
 import { StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedView } from "./ThemedView";
 import { ThemedText } from "./ThemedText";
-import { Colors } from "react-native/Libraries/NewAppScreen";
+import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme.web";
 
 export type RadioButtonProps = {
   label: string;
   selected: boolean;
-  disabled?: boolean | false;
+  disabled?: boolean;
   onPress: () => void;
 };
 
@@ -28,7 +28,7 @@ export const RadioButton = ({ label, selected, disabled, onPress }: RadioButtonP
   );
 };
 
-const styles = (colorScheme: string) => StyleSheet.create({
+const styles = (colorScheme: 'light' | 'dark') => StyleSheet.create({
   radioGroup: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -57,7 +57,7 @@ const styles = (colorScheme: string) => StyleSheet.create({
   },
   radioButtonLabel: {
     fontSize: 16,
-    color: Colors['dark'].text,
+    color: Colors[colorScheme].text,
     textAlign: 'center',
   },
 });

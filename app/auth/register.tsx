@@ -141,10 +141,14 @@ export default function RegisterScreen() {
       const isNameValid = validateName(formState.name);
       const isUsernameValid = validateUsername(formState.username);
       const isPasswordValid = validatePassword(formState.password);
-      if (!isNameValid || !isUsernameValid || !isPasswordValid) {
+      const isEmailValid = validateEmail(formState.email);
+      const isGenderValid = validateGender(formState.gender);
+
+      if (!isNameValid || !isGenderValid || !isEmailValid || !isUsernameValid || !isPasswordValid) {
         setFormState(prev => ({ ...prev, isLoading: false }));
         return;
       }
+      
       const credentials: RegisterCredentials = {
         name: formState.name.trim(),
         gender: formState.gender,

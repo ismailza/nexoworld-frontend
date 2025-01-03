@@ -39,7 +39,7 @@ export default function LoginScreen() {
   };
 
   const validateUsername = (username: string): boolean => {
-    const usernameRegex = /^[a-zA-Z0-9._-]+$/;
+    const usernameRegex = /^[a-zA-Z0-9._@-]+$/;
     
     if (!username) {
       setFormState(prev => ({ ...prev, usernameError: 'Username is required' }));
@@ -95,6 +95,8 @@ export default function LoginScreen() {
       const data = await authService.login(credentials);
       alert(data.message);
     } catch (error) {
+      console.log(error);
+      
       alert('Invalid credentials');
     } finally {
       setFormState(prev => ({ 
