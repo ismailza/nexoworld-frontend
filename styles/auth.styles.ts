@@ -11,6 +11,11 @@ export const authStyles = (colorScheme: 'light' | 'dark') => StyleSheet.create({
     paddingTop: isSmallDevice ? '10%' : '20%',
     backgroundColor: Colors[colorScheme].background,
   },
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingVertical: 20,
+  },
   titleContainer: {
     paddingHorizontal: 24,
     marginBottom: 40,

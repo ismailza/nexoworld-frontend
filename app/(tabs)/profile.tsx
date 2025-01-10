@@ -4,9 +4,11 @@ import { useColorScheme } from '@/hooks/useColorScheme';
 import { ThemedText } from '@/components/ThemedText';
 import { router } from 'expo-router';
 import { profileStyles as styles } from '@/styles/profile.styles';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function ProfileScreen() {
   const colorScheme = useColorScheme() || 'light';
+  const { logout } = useAuth();
 
   return (
     <ParallaxScrollView
@@ -39,6 +41,15 @@ export default function ProfileScreen() {
       >
         <ThemedText style={styles(colorScheme).signupButtonText}>
           Create Account
+        </ThemedText>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles(colorScheme).signupButton}
+        onPress={() => logout()}
+      >
+        <ThemedText style={styles(colorScheme).signupButtonText}>
+          Log Out
         </ThemedText>
       </TouchableOpacity>
     </View>

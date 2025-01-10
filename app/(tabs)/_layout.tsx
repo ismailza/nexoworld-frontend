@@ -1,15 +1,29 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform } from 'react-native';
-
+import { ActivityIndicator, Platform } from 'react-native';
 import { HapticTab } from '@/components/HapticTab';
 import { Ionicons } from '@expo/vector-icons';
 import TabBarBackground from '@/components/ui/TabBarBackground';
 import { Colors } from '@/constants/Colors';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { ThemedView } from '@/components/ThemedView';
+import { useProtectedRoute } from '@/hooks/useProtectedRoute';
 
 export default function TabLayout() {
+  const { isLoading, isAuthenticated } = useProtectedRoute();
   const colorScheme = useColorScheme();
+
+  if (isLoading) {
+    return (
+      <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" />
+      </ThemedView>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <Tabs
@@ -38,7 +52,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
+          title: 'CatchMap',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="paper-plane" size={size} color={color} />
           ),
