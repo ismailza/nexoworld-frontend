@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { login, logout, register, resetError } from "@/redux/slices/authSlice";
+import { checkAuthState, getCurrentUser, login, logout, register, resetError } from "@/redux/slices/authSlice";
 import type { LoginCredentials } from "@/types/login.types";
 import { useAppDispatch } from "./useAppDispatch";
 import { useAppSelector } from "./useAppSelector";
@@ -23,6 +23,14 @@ export const useAuth = () => {
     [dispatch]
   );
 
+  const handleGetProfile = useCallback(() => {
+    return dispatch(getCurrentUser()).unwrap();
+  }, [dispatch]);
+
+  const handleCheckAuth = useCallback(() => {
+    dispatch(checkAuthState());
+  }, [dispatch]);
+
   const handleLogout = useCallback(() => {
     dispatch(logout());
   }, [dispatch]);
@@ -35,6 +43,8 @@ export const useAuth = () => {
     ...auth,
     login: handleLogin,
     register: handleRegister,
+    profile: handleGetProfile,
+    checkAuth: handleCheckAuth,
     logout: handleLogout,
     resetError: handleResetError,
   };

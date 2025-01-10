@@ -2,156 +2,176 @@ import { StyleSheet } from 'react-native';
 import { Colors } from '@/constants/Colors';
 
 export const profileStyles = (colorScheme: 'light' | 'dark') => StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  gradientContainer: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingBottom: 24,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors[colorScheme].background,
   },
-  headerLogo: {
-    width: 150,
-    height: 150,
-    resizeMode: 'contain',
-  },
-  contentContainer: {
+  errorContainer: {
     flex: 1,
-    backgroundColor: Colors[colorScheme].background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    marginBottom: 16,
+    textAlign: 'center',
   },
   profileHeader: {
     alignItems: 'center',
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors[colorScheme].border,
+    padding: 16,
   },
   avatarContainer: {
-    marginBottom: 16,
-    alignItems: 'center',
-  },
-  avatar: {
     width: 120,
     height: 120,
     borderRadius: 60,
+    borderWidth: 3,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
   },
-  avatarPlaceholder: {
-    backgroundColor: Colors[colorScheme].placeholder,
-    justifyContent: 'center',
-    alignItems: 'center',
+  avatar: {
+    width: '100%',
+    height: '100%',
   },
-  avatarText: {
-    fontSize: 48,
-    color: Colors[colorScheme].background,
-    fontWeight: 'bold',
-  },
-  editAvatarButton: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    backgroundColor: Colors[colorScheme].primary,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  editAvatarText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  userName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  userEmail: {
-    fontSize: 16,
-    color: Colors[colorScheme].secondaryText,
-    marginBottom: 8,
-  },
-  roleContainer: {
-    backgroundColor: Colors[colorScheme].primary + '20',
-    paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 16,
-  },
-  roleText: {
-    color: Colors[colorScheme].primary,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  section: {
-    paddingHorizontal: 16,
-    paddingTop: 24,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    marginBottom: 16,
-  },
-  menuItem: {
+  usernameContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors[colorScheme].border,
+    marginTop: 16,
   },
-  menuText: {
-    fontSize: 16,
-  },
-  logoutButton: {
-    marginHorizontal: 16,
-    marginTop: 32,
-    marginBottom: 24,
-    backgroundColor: Colors[colorScheme].error,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  logoutButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  // Unauthenticated styles
-  unauthenticatedContainer: {
-    padding: 24,
-    alignItems: 'center',
-  },
-  welcomeText: {
+  username: {
     fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
+    marginRight: 8,
+  },
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'green',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  verifiedText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
+    marginLeft: 4,
+  },
+  card: {
+    margin: 24,
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  levelHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  subText: {
-    fontSize: 16,
-    color: Colors[colorScheme].secondaryText,
-    textAlign: 'center',
-    marginBottom: 32,
+  levelTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
   },
-  loginButton: {
-    backgroundColor: Colors[colorScheme].primary,
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 12,
+  levelNumber: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  progressBar: {
+    height: 10,
+    borderRadius: 5,
+    overflow: 'hidden',
+    marginVertical: 8,
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: 5,
+  },
+  xpText: {
+    fontSize: 12,
+    opacity: 0.7,
+    textAlign: 'right',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  infoRow: {
+    flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 16,
+  },
+  infoContent: {
+    marginLeft: 8,
+  },
+  infoLabel: {
+    fontSize: 12,
+    opacity: 0.7,
+  },
+  infoValue: {
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  buttonContainer: {
+    padding: 16,
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 30,
+    marginVertical: 6,
+  },
+  tradeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 30,
     marginBottom: 12,
   },
-  loginButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  signupButton: {
-    backgroundColor: 'transparent',
-    width: '100%',
-    paddingVertical: 16,
-    borderRadius: 12,
+  logoutButton: {
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 30,
     borderWidth: 1,
-    borderColor: Colors[colorScheme].primary,
   },
-  signupButtonText: {
-    color: Colors[colorScheme].primary,
+  buttonText: {
+    color: 'white',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    marginLeft: 8,
   },
 });

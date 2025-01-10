@@ -1,8 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { AuthService } from "@/services/auth.service";
 import { LoginCredentials } from "@/types/login.types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { RegisterCredentials } from "@/types/register.types";
+import axiosInstance from "@/services/axios.service";
+import { AppResponse } from "@/types/response.types";
+import { User } from "@/types/user.types";
+import { AuthResponse } from "@/types/auth-response.types";
 
 interface AuthState {
   user: any | null;
@@ -26,16 +29,23 @@ export const login = createAsyncThunk(
   "auth/login",
   async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
-      const authService = new AuthService();
-      const response = await authService.login(credentials);
+      const response = await axiosInstance.post<AppResponse<AuthResponse>>(
+        `/auth/login`,
+        credentials
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message);
+      }
 
       // Store tokens in AsyncStorage
       await AsyncStorage.multiSet([
-        ["accessToken", response.result.accessToken],
-        ["refreshToken", response.result.refreshToken],
+        ["user", JSON.stringify(response.data.result.user)],
+        ["accessToken", response.data.result.accessToken],
+        ["refreshToken", response.data.result.refreshToken],
       ]);
 
-      return response;
+      return response.data.result;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || "Login failed");
     }
@@ -46,10 +56,16 @@ export const register = createAsyncThunk(
   'auth/register',
   async (credentials: RegisterCredentials, { rejectWithValue }) => {
     try {
-      const authService = new AuthService();
-      const response = await authService.register(credentials);
+      const response = await axiosInstance.post<AppResponse<any>>(
+        `/auth/register`,
+        credentials
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message);
+      }
       
-      return response;
+      return response.data;
     } catch (error: any) {
       return rejectWithValue(error.response?.data?.message || 'Registration failed');
     }
@@ -69,24 +85,44 @@ export const logout = createAsyncThunk(
   }
 );
 
+export const getCurrentUser = createAsyncThunk(
+  'auth/getCurrentUser',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axiosInstance.get<AppResponse<User>>('/auth/me');
+
+      if (!response.data.success) {
+        throw new Error(response.data.message);
+      }
+
+      return response.data.result;
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to get user data');
+    }
+  }
+);
+
 export const checkAuthState = createAsyncThunk(
   "auth/checkState",
   async (_, { rejectWithValue }) => {
     try {
       const tokens = await AsyncStorage.multiGet([
+        "user",
         "accessToken",
         "refreshToken",
       ]);
-      const accessToken = tokens[0][1];
-      const refreshToken = tokens[1][1];
+      const user = tokens[0][1];
+      const accessToken = tokens[1][1];
+      const refreshToken = tokens[2][1];
 
-      if (!accessToken || !refreshToken) {
+      if (!accessToken || !refreshToken || !user) {
         throw new Error("No tokens found");
       }
 
       return {
         accessToken,
         refreshToken,
+        user: JSON.parse(user),
       };
     } catch (error) {
       return rejectWithValue("No valid session found");
@@ -120,6 +156,18 @@ const authSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
+      // Get Current User
+      .addCase(getCurrentUser.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(getCurrentUser.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload;
+      })
+      .addCase(getCurrentUser.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
       // Register
       .addCase(register.pending, (state) => {
         state.isLoading = true;
@@ -139,6 +187,7 @@ const authSlice = createSlice({
       // Check Auth State
       .addCase(checkAuthState.fulfilled, (state, action) => {
         state.isAuthenticated = true;
+        state.user = action.payload.user;
         state.accessToken = action.payload.accessToken;
         state.refreshToken = action.payload.refreshToken;
       })
