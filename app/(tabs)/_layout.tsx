@@ -68,6 +68,16 @@ export default function TabLayout() {
           headerShown: true,
         }}
       />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="paper-plane" size={size} color={color} />
+          ),
+          headerShown: true,
+        }}
+      />
     </Tabs>
   );
 }

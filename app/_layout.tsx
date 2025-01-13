@@ -3,35 +3,54 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { Provider } from 'react-redux';
 import { store } from '@/redux/store';
 import '@/services/axios.service';
+import { useAuth } from '@/hooks/useAuth';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-export default function RootLayout() {
+function AuthenticatedLayout() {
   const colorScheme = useColorScheme();
+  const { checkAuth } = useAuth();
+  const [authChecked, setAuthChecked] = useState(false);
   const [loaded] = useFonts({
     SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
   });
 
   useEffect(() => {
+    async function initializeApp() {
+      try {
+        // Check authentication state when app starts
+        await checkAuth();
+      } catch (error) {
+        console.log('Auth check failed:', error);
+      } finally {
+        setAuthChecked(true);
+      }
+    }
+
     if (loaded) {
+      initializeApp();
+    }
+  }, [loaded, checkAuth]);
+
+  useEffect(() => {
+    if (loaded && authChecked) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, authChecked]);
 
-  if (!loaded) {
+  if (!loaded || !authChecked) {
     return null;
   }
 
   return (
-    <Provider store={store}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{
           headerShown: false
         }}>
@@ -40,6 +59,13 @@ export default function RootLayout() {
         </Stack>
         <StatusBar style="auto" />
       </ThemeProvider>
+  );
+}
+
+export default function RootLayout() { 
+  return (
+    <Provider store={store}>
+      <AuthenticatedLayout/>
     </Provider>
   );
 }
