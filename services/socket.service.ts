@@ -46,6 +46,11 @@ class SocketService {
       this.notifyListeners('nearbyCoins', data);
     });
 
+    // Listen for nearby coins
+    this.socket.on('caughtCoins', (data) => {
+      this.notifyListeners('caughtCoins', data);
+    });
+
     // Listen for new messages
     this.socket.on('message', (data) => {
       this.notifyListeners('message', data);

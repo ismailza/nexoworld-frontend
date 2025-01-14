@@ -1,13 +1,14 @@
-import { ActivityIndicator, StyleSheet } from "react-native";
+import { StyleSheet, Image } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
-import MapView, { Marker, Region } from "react-native-maps";
+import MapView, { Marker, Region, PROVIDER_GOOGLE } from "react-native-maps";
 import { useLocation } from "@/hooks/useLocation";
 import { ThemedText } from "@/components/ThemedText";
 import { useSocket } from "@/hooks/useSocket";
 import { useEffect, useState } from "react";
 import { CoinLocation } from "@/types/coin.types";
-import { Ionicons } from "@expo/vector-icons";
 import { NexoMarker } from "@/components/NexoMarker";
+import { MapLoader } from "@/components/MapLoader";
+import { useAuth } from "@/hooks/useAuth";
 
 const DEFAULT_REGION: Region = {
   latitude: 33.697904,
@@ -17,21 +18,22 @@ const DEFAULT_REGION: Region = {
 };
 
 export default function HomeScreen() {
+  const { user } = useAuth();
   const { location, error, loading } = useLocation();
   const { updateLocation, onCoinsUpdate } = useSocket();
   const [nearbyCoins, setNearbyCoins] = useState<CoinLocation[]>([]);
+  const [mapReady, setMapReady] = useState(false);
 
   useEffect(() => {
-    if (location) {
+    if (location && mapReady) {
       updateLocation(location);
     }
-  }, [location]);
+  }, [location, mapReady]);
 
-  // Listen for nearby coins updates
   useEffect(() => {
     const unsubscribe = onCoinsUpdate((coins) => {
-      console.log('Received coins:', coins);
-      const validCoins = coins.map(coin => ({
+      console.log("Received coins:", coins);
+      const validCoins = coins.map((coin) => ({
         ...coin,
         latitude: parseFloat(coin.latitude.toString()),
         longitude: parseFloat(coin.longitude.toString()),
@@ -52,19 +54,30 @@ export default function HomeScreen() {
     );
   }
 
+  if (loading) {
+    return (
+      <ThemedView style={styles.container}>
+        <MapLoader status="Getting your location..." />
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.container}>
-      {loading && <ActivityIndicator size="large" />}
+      {!mapReady && <MapLoader status="Initializing map..." />}
       <MapView
+        provider={PROVIDER_GOOGLE}
         style={styles.map}
         initialRegion={location || DEFAULT_REGION}
         region={location || undefined}
         zoomEnabled={true}
-        showsUserLocation={true}
         showsMyLocationButton={true}
+        onMapReady={() => setMapReady(true)}
+        loadingEnabled={true}
+        loadingIndicatorColor="#666666"
+        loadingBackgroundColor="#eeeeee"
       >
-        {/* Player location marker */}
-        {location && (
+        {location && mapReady && (
           <Marker
             coordinate={{
               latitude: location.latitude,
@@ -72,23 +85,30 @@ export default function HomeScreen() {
             }}
             title="You"
           >
-            <Ionicons name="person" size={24} color="blue" />
+            <Image
+              source={
+                user.avatar
+                  ? { uri: user.avatar }
+                  : require("@/assets/images/male_profile.png")
+              }
+              style={styles.avatar}
+            />
           </Marker>
         )}
 
-        {/* Coin markers */}
-        {nearbyCoins.map((coinLocation) => (
-          <Marker
-            key={coinLocation.id}
-            coordinate={{
-              latitude: coinLocation.latitude,
-              longitude: coinLocation.longitude,
-            }}
-            title={`${coinLocation.coin.name} : ${coinLocation.coin.type}`}
-          >
-            <NexoMarker coin={coinLocation.coin} />
-          </Marker>
-        ))}
+        {mapReady &&
+          nearbyCoins.map((coinLocation) => (
+            <Marker
+              key={coinLocation.id}
+              coordinate={{
+                latitude: coinLocation.latitude,
+                longitude: coinLocation.longitude,
+              }}
+              title={`${coinLocation.coin.name} : ${coinLocation.coin.type}`}
+            >
+              <NexoMarker coin={coinLocation.coin} />
+            </Marker>
+          ))}
       </MapView>
     </ThemedView>
   );
@@ -100,10 +120,9 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+  avatar: {
+    width: 20,
+    height: 20,
   },
   map: {
     flex: 1,

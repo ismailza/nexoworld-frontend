@@ -8,10 +8,10 @@ interface NexoMarkerProps {
 }
 
 const NEXO_ICONS = {
-  COMMON: require('@/assets/icons/nexos/common.svg'),
-  RARE: require('@/assets/icons/nexos/rare.svg'),
-  EPIC: require('@/assets/icons/nexos/epic.svg'),
-  LEGENDARY: require('@/assets/icons/nexos/legendary.svg'),
+  COMMON: require('@/assets/icons/nexos/common.png'),
+  RARE: require('@/assets/icons/nexos/rare.png'),
+  EPIC: require('@/assets/icons/nexos/epic.png'),
+  LEGENDARY: require('@/assets/icons/nexos/legendary.png'),
 };
 
 const NEXO_SIZES = {

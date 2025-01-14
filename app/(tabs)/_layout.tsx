@@ -1,22 +1,26 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { ActivityIndicator, Platform } from 'react-native';
-import { HapticTab } from '@/components/HapticTab';
-import { Ionicons } from '@expo/vector-icons';
-import TabBarBackground from '@/components/ui/TabBarBackground';
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { ThemedView } from '@/components/ThemedView';
-import { useProtectedRoute } from '@/hooks/useProtectedRoute';
+import React from "react";
+import { Tabs } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { ThemedView } from "@/components/ThemedView";
+import { useProtectedRoute } from "@/hooks/useProtectedRoute";
+import { CustomTabBar } from "@/components/CustomTabBar";
+import { MapLoader } from "@/components/MapLoader";
+
+interface TabBarIconProps {
+  focused: boolean;
+  color: string;
+  size: number;
+}
 
 export default function TabLayout() {
   const { isLoading, isAuthenticated } = useProtectedRoute();
-  const colorScheme = useColorScheme();
 
   if (isLoading) {
     return (
-      <ThemedView style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+      <ThemedView
+        style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+      >
+        <MapLoader status="Loading your experience..." />
       </ThemedView>
     );
   }
@@ -25,57 +29,47 @@ export default function TabLayout() {
     return null;
   }
 
+  const getTabIcon = (iconName: keyof typeof Ionicons.glyphMap) => {
+    return ({ focused, color, size }: TabBarIconProps) => (
+      <Ionicons
+        name={
+          focused
+            ? iconName
+            : (`${iconName}-outline` as keyof typeof Ionicons.glyphMap)
+        }
+        size={size}
+        color={color}
+      />
+    );
+  };
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
-          },
-          default: {},
-        }),
-      }}>
+        tabBarShowLabel: false,
+      }}
+      tabBar={(props) => <CustomTabBar {...props} />}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="home" size={size} color={color} />
-          ),
+          title: "Home",
+          tabBarIcon: getTabIcon("home"),
         }}
       />
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'CatchMap',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="paper-plane" size={size} color={color} />
-          ),
+          title: "CatchMap",
+          tabBarIcon: getTabIcon("compass"),
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="person" size={size} color={color} />
-          ),
-          headerShown: true,
-        }}
-      />
-      <Tabs.Screen
-        name="chat"
-        options={{
-          title: 'Chat',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="paper-plane" size={size} color={color} />
-          ),
-          headerShown: true,
+          title: "Profile",
+          tabBarIcon: getTabIcon("person"),
         }}
       />
     </Tabs>

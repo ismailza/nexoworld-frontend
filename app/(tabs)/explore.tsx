@@ -1,8 +1,14 @@
-import { ActivityIndicator, StyleSheet } from "react-native";
+import { StyleSheet, Image } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
-import MapView, { Marker, Region } from "react-native-maps";
+import MapView, { Marker, Region, PROVIDER_GOOGLE } from "react-native-maps";
 import { useLocation } from "@/hooks/useLocation";
 import { ThemedText } from "@/components/ThemedText";
+import { useSocket } from "@/hooks/useSocket";
+import { useEffect, useState } from "react";
+import { CoinLocation } from "@/types/coin.types";
+import { NexoMarker } from "@/components/NexoMarker";
+import { MapLoader } from "@/components/MapLoader";
+import { useAuth } from "@/hooks/useAuth";
 
 const DEFAULT_REGION: Region = {
   latitude: 33.697904,
@@ -12,7 +18,27 @@ const DEFAULT_REGION: Region = {
 };
 
 export default function CatchMapScreen() {
+  const { user } = useAuth();
   const { location, error, loading } = useLocation();
+  const { onCaughtCoinsUpdate } = useSocket();
+  const [caughtCoins, setCaughtCoins] = useState<CoinLocation[]>([]);
+  const [mapReady, setMapReady] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onCaughtCoinsUpdate((coins) => {
+      console.log("Received coins:", coins);
+      const validCoins = coins.map((coin) => ({
+        ...coin,
+        latitude: parseFloat(coin.latitude.toString()),
+        longitude: parseFloat(coin.longitude.toString()),
+      }));
+      setCaughtCoins(validCoins);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
 
   if (error) {
     return (
@@ -22,23 +48,61 @@ export default function CatchMapScreen() {
     );
   }
 
+  if (loading) {
+    return (
+      <ThemedView style={styles.container}>
+        <MapLoader status="Getting your location..." />
+      </ThemedView>
+    );
+  }
+
   return (
     <ThemedView style={styles.container}>
-      {loading && <ActivityIndicator size="large" />}
+      {!mapReady && <MapLoader status="Initializing map..." />}
       <MapView
+        provider={PROVIDER_GOOGLE}
         style={styles.map}
         initialRegion={location || DEFAULT_REGION}
+        region={location || undefined}
         zoomEnabled={true}
         showsMyLocationButton={true}
+        onMapReady={() => setMapReady(true)}
+        loadingEnabled={true}
+        loadingIndicatorColor="#666666"
+        loadingBackgroundColor="#eeeeee"
       >
-        {location && (
+        {location && mapReady && (
           <Marker
             coordinate={{
               latitude: location.latitude,
               longitude: location.longitude,
             }}
-          />
+            title="You"
+          >
+            <Image
+              source={
+                user.avatar
+                  ? { uri: user.avatar }
+                  : require("@/assets/images/male_profile.png")
+              }
+              style={styles.avatar}
+            />
+          </Marker>
         )}
+
+        {mapReady &&
+          caughtCoins.map((coinLocation) => (
+            <Marker
+              key={coinLocation.id}
+              coordinate={{
+                latitude: coinLocation.latitude,
+                longitude: coinLocation.longitude,
+              }}
+              title={`${coinLocation.coin.name} : ${coinLocation.coin.type}`}
+            >
+              <NexoMarker coin={coinLocation.coin} />
+            </Marker>
+          ))}
       </MapView>
     </ThemedView>
   );
@@ -50,10 +114,9 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  titleContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+  avatar: {
+    width: 20,
+    height: 20,
   },
   map: {
     flex: 1,
