@@ -85,6 +85,34 @@ export const logout = createAsyncThunk(
   }
 );
 
+export const refreshToken = createAsyncThunk(
+  "auth/refresh",
+  async (_, { rejectWithValue, dispatch }) => {
+    try {
+      const response = await axiosInstance.post<AppResponse<AuthResponse>>(
+        "/auth/refresh",
+        { refreshToken: await AsyncStorage.getItem('refreshToken') }
+      );
+
+      if (!response.data.success) {
+        throw new Error(response.data.message);
+      }
+
+      // Store tokens in AsyncStorage
+      await AsyncStorage.multiSet([
+        ["accessToken", response.data.result.accessToken],
+        ["refreshToken", response.data.result.refreshToken],
+      ]);
+
+      return response.data.result;
+    } catch (error: any) {
+      // If refresh token fails, logout user
+      await dispatch(logout());
+      return rejectWithValue("Failed to refresh token");
+    }
+  }
+);
+
 export const getCurrentUser = createAsyncThunk(
   'auth/getCurrentUser',
   async (_, { rejectWithValue }) => {
@@ -193,6 +221,20 @@ const authSlice = createSlice({
       })
       .addCase(checkAuthState.rejected, (state) => {
         return initialState;
+      })
+      // Refresh Token
+      .addCase(refreshToken.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(refreshToken.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.accessToken = action.payload.accessToken;
+        state.refreshToken = action.payload.refreshToken;
+      })
+      .addCase(refreshToken.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
       });
   },
 });

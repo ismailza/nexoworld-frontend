@@ -1,23 +1,28 @@
-import { io, Socket } from 'socket.io-client';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { APP_CONFIG } from '@/config/app.config';
+import { io, Socket } from "socket.io-client";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { APP_CONFIG } from "@/config/app.config";
+import { store } from "@/redux/store";
+import { refreshToken } from "@/redux/slices/authSlice";
 
 class SocketService {
   private socket: Socket | null = null;
   private listeners: Map<string, Set<Function>> = new Map();
+  private isRefreshing: boolean = false;
 
   async connect() {
     if (this.socket?.connected) return;
 
-    const token = await AsyncStorage.getItem('accessToken');
+    const token = await AsyncStorage.getItem("accessToken");
     if (!token) return;
 
     this.socket = io(APP_CONFIG.WS_URL, {
-      path: '/socket.io',
-      transports: ['websocket'],
-      auth: token ? {
-        token: `Bearer ${token}`,
-      } : undefined,
+      path: "/socket.io",
+      transports: ["websocket"],
+      auth: token
+        ? {
+            token: `Bearer ${token}`,
+          }
+        : undefined,
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
@@ -29,32 +34,47 @@ class SocketService {
   private setupListeners() {
     if (!this.socket) return;
 
-    this.socket.on('connect', () => {
-      console.log('Connected to WebSocket');
+    this.socket.on("connect", () => {
+      console.log("Connected to WebSocket");
     });
 
-    this.socket.on('disconnect', () => {
-      console.log('Disconnected from WebSocket');
+    this.socket.on("disconnect", () => {
+      console.log("Disconnected from WebSocket");
     });
 
-    this.socket.on('error', (error) => {
-      console.error('WebSocket error:', error);
+    this.socket.on("error", (error) => {
+      console.error("WebSocket error:", error);
     });
 
-    // Listen for nearby coins
-    this.socket.on('nearbyCoins', (data) => {
-      this.notifyListeners('nearbyCoins', data);
+    this.socket.on('auth_error', async (error: any) => {
+      console.error('Authentication error:', error);
+      if (error.code === 401) {
+        await this.refreshTokenAndReconnect();
+      }
     });
 
-    // Listen for nearby coins
-    this.socket.on('caughtCoins', (data) => {
-      this.notifyListeners('caughtCoins', data);
+    this.listeners.forEach((callbacks, event) => {
+      callbacks.forEach(callback => {
+        this.socket?.on(event, (data) => callback(data));
+      });
     });
+  }
 
-    // Listen for new messages
-    this.socket.on('message', (data) => {
-      this.notifyListeners('message', data);
-    });
+  private async refreshTokenAndReconnect() {
+    try {
+      if (this.isRefreshing) return;
+
+      this.isRefreshing = true;
+      const { dispatch } = store;
+      await dispatch(refreshToken()).unwrap();
+
+      // Reconnect with new token
+      await this.connect();
+    } catch (error) {
+      console.error("Token refresh failed:", error);
+    } finally {
+      this.isRefreshing = false;
+    }
   }
 
   disconnect() {
@@ -81,7 +101,7 @@ class SocketService {
   }
 
   private notifyListeners(event: string, data: any) {
-    this.listeners.get(event)?.forEach(callback => callback(data));
+    this.listeners.get(event)?.forEach((callback) => callback(data));
   }
 }
 
