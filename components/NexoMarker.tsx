@@ -15,10 +15,10 @@ const NEXO_ICONS = {
 };
 
 const NEXO_SIZES = {
-  COMMON: 35,
-  RARE: 40,
-  EPIC: 45,
-  LEGENDARY: 50,
+  COMMON: 32,
+  RARE: 35,
+  EPIC: 37,
+  LEGENDARY: 40,
 };
 
 export function NexoMarker({ coin, size = 0 }: NexoMarkerProps) {

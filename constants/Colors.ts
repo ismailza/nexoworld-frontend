@@ -62,7 +62,7 @@ export const Colors = {
     placeholder: "#94A3B8",
     border: "#E2E8F0",
     divider: "#F1F5F9",
-    shadow: "rgba(0, 0, 0, 0.1)",
+    shadow: "rgba(0, 0, 0, 0.25)",
 
     // Interactive States
     buttonPrimary: bronze[400],

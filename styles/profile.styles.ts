@@ -10,7 +10,6 @@ export const profileStyles = (colorScheme: "light" | "dark") => {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: colors.background,
     },
     gradientContainer: {
       flex: 1,
@@ -26,11 +25,12 @@ export const profileStyles = (colorScheme: "light" | "dark") => {
     profileHeader: {
       alignItems: "center",
       paddingVertical: 20,
+      backgroundColor: "transparent",
     },
     avatarOuterContainer: {
       padding: 3,
       borderRadius: 70,
-      backgroundColor: colors.primary + "20",
+      backgroundColor: "transparent",
       shadowColor: colors.primary,
       shadowOffset: { width: 0, height: 8 },
       shadowOpacity: 0.25,
@@ -44,8 +44,6 @@ export const profileStyles = (colorScheme: "light" | "dark") => {
       borderWidth: 4,
       borderColor: colors.primary,
       overflow: "hidden",
-      backgroundColor:
-        colorScheme === "dark" ? colors.surfaceDefault : colors.background,
     },
     avatar: {
       width: "100%",
@@ -88,7 +86,7 @@ export const profileStyles = (colorScheme: "light" | "dark") => {
     card: {
       marginHorizontal: CARD_HORIZONTAL_PADDING,
       marginVertical: 10,
-      borderRadius: 24,
+      borderRadius: 25,
       backgroundColor:
         colorScheme === "dark" ? colors.surfaceDefault : colors.background,
       shadowColor: colors.shadow,
@@ -102,6 +100,7 @@ export const profileStyles = (colorScheme: "light" | "dark") => {
     },
     cardContent: {
       padding: 20,
+      borderRadius: 25,
     },
     levelHeader: {
       flexDirection: "row",
@@ -214,9 +213,10 @@ export const profileStyles = (colorScheme: "light" | "dark") => {
       color: colors.text,
     },
     buttonContainer: {
+      backgroundColor: "transparent",
+      marginVertical: 10,
+      paddingTop: 10,
       paddingHorizontal: 20,
-      paddingTop: 16,
-      paddingBottom: 16,
       zIndex: 1,
     },
     button: {

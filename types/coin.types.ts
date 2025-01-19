@@ -1,3 +1,5 @@
+import { User } from "./user.types";
+
 export interface Coin {
   id: string;
   name: string;
@@ -11,8 +13,11 @@ export interface CoinLocation {
   id: string;
   latitude: number;
   longitude: number;
-  isActive: boolean;
   coin: Coin;
+  isCaught: boolean;
+  caughtBy: User | null;
+  caughtAt: Date | null;
+  ownedBy: User | null;
   createdAt: Date;
   updatedAt: Date;
 };

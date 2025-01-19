@@ -28,7 +28,7 @@ export const tabsStyles = (colorScheme: "light" | "dark") => {
         width: 0,
         height: 8,
       },
-      shadowOpacity: colorScheme === "dark" ? 0.4 : 0.15,
+      shadowOpacity: colorScheme === "dark" ? 0.4 : 0.3,
       shadowRadius: 16,
     },
     tabButton: {

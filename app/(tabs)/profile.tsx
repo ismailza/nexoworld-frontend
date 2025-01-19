@@ -16,7 +16,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Layout } from "@/constants/Layout";
-import { BlurView } from "expo-blur";
 import { StatItem } from "@/components/StatItem";
 import { InfoRow } from "@/components/InfoRow";
 import { router } from "expo-router";
@@ -61,13 +60,12 @@ export default function ProfileScreen() {
     return null;
   }
 
-  const level = Math.floor(user.xp / 100) + 1;
   const xpProgress = user.xp % 100;
 
   return (
     <ThemedView style={styles(colorScheme).container}>
       <LinearGradient
-        colors={[colors.primary + "20", colors.background, colors.background]}
+        colors={[colors.primary + "30", colors.primary + "20", colors.primary + "10"]}
         style={[
           styles(colorScheme).gradientContainer,
           {
@@ -144,7 +142,7 @@ export default function ProfileScreen() {
                   Current Level
                 </ThemedText>
                 <ThemedText style={styles(colorScheme).levelNumber}>
-                  Level {level}
+                  Level {user.level}
                 </ThemedText>
               </ThemedView>
 
@@ -160,7 +158,7 @@ export default function ProfileScreen() {
                   />
                 </ThemedView>
                 <ThemedText style={styles(colorScheme).xpText}>
-                  {xpProgress}/100 XP to Level {level + 1}
+                  {xpProgress}/100 XP to Level {user.level + 1}
                 </ThemedText>
               </ThemedView>
 
@@ -189,9 +187,7 @@ export default function ProfileScreen() {
           </ThemedView>
 
           {/* Bottom Buttons */}
-          <BlurView
-            intensity={80}
-            tint={colorScheme === "dark" ? "dark" : "light"}
+          <ThemedView
             style={[
               styles(colorScheme).buttonContainer,
               {
@@ -237,7 +233,7 @@ export default function ProfileScreen() {
                 Logout
               </ThemedText>
             </TouchableOpacity>
-          </BlurView>
+          </ThemedView>
         </Animated.ScrollView>
       </LinearGradient>
     </ThemedView>

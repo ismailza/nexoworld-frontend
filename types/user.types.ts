@@ -9,4 +9,5 @@ export interface User {
   createdAt: Date;
   updatedAt: Date;
   xp: number;
+  level: number;
 }

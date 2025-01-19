@@ -20,7 +20,7 @@ const DEFAULT_REGION: Region = {
 export default function HomeScreen() {
   const { user } = useAuth();
   const { location, error, loading } = useLocation();
-  const { updateLocation, onCoinsUpdate } = useSocket();
+  const { updateLocation, onCoinsUpdate, onRemoveNearbyCoin } = useSocket();
   const [nearbyCoins, setNearbyCoins] = useState<CoinLocation[]>([]);
   const [mapReady, setMapReady] = useState(false);
 
@@ -41,8 +41,13 @@ export default function HomeScreen() {
       setNearbyCoins(validCoins);
     });
 
+    const removeCoin = onRemoveNearbyCoin((coinLocationId) => {
+      setNearbyCoins((coins) => coins.filter((coin) => coin.id !== coinLocationId));
+    });
+
     return () => {
       unsubscribe();
+      removeCoin();
     };
   }, []);
 
