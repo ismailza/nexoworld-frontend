@@ -7,7 +7,7 @@ interface NexoMarkerProps {
   size?: number;
 }
 
-const NEXO_ICONS = {
+export const NEXO_ICONS = {
   COMMON: require('@/assets/icons/nexos/common.png'),
   RARE: require('@/assets/icons/nexos/rare.png'),
   EPIC: require('@/assets/icons/nexos/epic.png'),
