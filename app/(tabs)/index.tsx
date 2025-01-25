@@ -1,11 +1,11 @@
-import { StyleSheet, Image } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from "react";
+import { StyleSheet, Image, FlatList } from "react-native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { ThemedView } from "@/components/ThemedView";
 import MapView, { Marker, Region, PROVIDER_GOOGLE } from "react-native-maps";
 import { useLocation } from "@/hooks/useLocation";
 import { ThemedText } from "@/components/ThemedText";
 import { useSocket } from "@/hooks/useSocket";
-import { useEffect, useState } from "react";
 import { CoinLocation } from "@/types/coin.types";
 import { NexoMarker } from "@/components/NexoMarker";
 import { MapLoader } from "@/components/MapLoader";
@@ -34,34 +34,51 @@ export default function HomeScreen() {
     showCancel: false,
   });
 
-  useEffect(() => {
-    if (location && mapReady) {
-      updateLocation(location);
-    }
-  }, [location, mapReady]);
+  const MemoizedNexoMarker = React.memo(NexoMarker);
 
-  useEffect(() => {
-    const unsubscribe = onCoinsUpdate((coins) => {
-      console.log("Received coins:", coins);
-      const validCoins = coins.map((coin) => ({
+  useFocusEffect(
+    useCallback(() => {
+      if (location && mapReady) {
+        updateLocation(location);
+      }
+    }, [location, mapReady])
+  );
+
+  const handleCoinsUpdate = useCallback((coins: CoinLocation[]) => {
+    console.log("Received coins: ", coins.length);
+    const validCoins = coins
+      .map((coin) => ({
         ...coin,
         latitude: parseFloat(coin.latitude.toString()),
         longitude: parseFloat(coin.longitude.toString()),
-      }));
-      setNearbyCoins(validCoins);
-    });
-
-    const removeCoin = onRemoveNearbyCoin((coinLocationId) => {
-      setNearbyCoins((coins) =>
-        coins.filter((coin) => coin.id !== coinLocationId)
+      }))
+      .filter(
+        (coin) =>
+          !isNaN(coin.latitude) &&
+          !isNaN(coin.longitude) &&
+          coin.latitude >= -90 &&
+          coin.latitude <= 90 &&
+          coin.longitude >= -180 &&
+          coin.longitude <= 180
       );
-    });
+    setNearbyCoins(validCoins);
+  }, []);
+
+  const handleRemoveCoin = useCallback((coinLocationId: string) => {
+    setNearbyCoins((coins) =>
+      coins.filter((coin) => coin.id !== coinLocationId)
+    );
+  }, []);
+
+  useEffect(() => {
+    const unsubscribe = onCoinsUpdate(handleCoinsUpdate);
+    const removeCoin = onRemoveNearbyCoin(handleRemoveCoin);
 
     return () => {
       unsubscribe();
       removeCoin();
     };
-  }, []);
+  }, [handleCoinsUpdate, handleRemoveCoin]);
 
   const handleCoinPress = (coinLocation: CoinLocation) => {
     if (!location) {
@@ -83,7 +100,7 @@ export default function HomeScreen() {
       coinLocation.longitude
     );
 
-    if (distance > 50) {
+    if (distance > 250) {
       // Show Alert for distance error
       setAlertConfig({
         title: "Too Far",
@@ -148,7 +165,7 @@ export default function HomeScreen() {
           >
             <Image
               source={
-                user.avatar
+                user?.avatar
                   ? { uri: user.avatar }
                   : require("@/assets/images/male_profile.png")
               }
@@ -168,7 +185,7 @@ export default function HomeScreen() {
               title={`${coinLocation.coin.name} : ${coinLocation.coin.type}`}
               onPress={() => handleCoinPress(coinLocation)}
             >
-              <NexoMarker coin={coinLocation.coin} />
+              <MemoizedNexoMarker coin={coinLocation.coin} />
             </Marker>
           ))}
       </MapView>

@@ -1,25 +1,10 @@
-import { useEffect, useCallback } from "react";
+import { useCallback } from "react";
 import { socketService } from "@/services/socket.service";
-import { useAuth } from "./useAuth";
 import { CoinLocation } from "@/types/coin.types";
 import { Region } from "react-native-maps";
 import { User } from "@/types/user.types";
 
 export const useSocket = () => {
-  const { isAuthenticated } = useAuth();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      socketService.connect();
-    } else {
-      socketService.disconnect();
-    }
-
-    return () => {
-      socketService.disconnect();
-    };
-  }, [isAuthenticated]);
-
   const onCoinsUpdate = useCallback(
     (callback: (coins: CoinLocation[]) => void) => {
       socketService.addListener("nearbyCoins", callback);
@@ -36,8 +21,22 @@ export const useSocket = () => {
     []
   );
 
+  const getOwnedCoins = useCallback(() => {
+    socketService.emit("getOwnedCoins", {});
+  }, []);
+
+  const onOwnedCoinsUpdate = useCallback(
+    (callback: (coins: CoinLocation[]) => void) => {
+      socketService.addListener("ownedCoins", callback);
+      return () => {
+        socketService.removeListener("ownedCoins", callback);
+      };
+    },
+    []
+  );
+
   const updateLocation = useCallback((location: Region) => {
-    socketService.emit("nearbyCoins", {
+    socketService.emit("getNearbyCoins", {
       latitude: location.latitude,
       longitude: location.longitude,
     });
@@ -84,6 +83,8 @@ export const useSocket = () => {
     onCoinsUpdate,
     onCaughtCoinsUpdate,
     updateLocation,
+    getOwnedCoins,
+    onOwnedCoinsUpdate,
     catchCoin,
     onCoinCaught,
     onRemoveNearbyCoin,

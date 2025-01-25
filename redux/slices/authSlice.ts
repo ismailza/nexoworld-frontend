@@ -8,7 +8,7 @@ import { User } from "@/types/user.types";
 import { AuthResponse } from "@/types/auth-response.types";
 
 interface AuthState {
-  user: any | null;
+  user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
@@ -147,6 +147,8 @@ export const checkAuthState = createAsyncThunk(
         throw new Error("No tokens found");
       }
 
+      getCurrentUser();
+
       return {
         accessToken,
         refreshToken,
@@ -154,6 +156,17 @@ export const checkAuthState = createAsyncThunk(
       };
     } catch (error) {
       return rejectWithValue("No valid session found");
+    }
+  }
+);
+
+export const updateScore = createAsyncThunk(
+  'auth/updateScore',
+  async (user: User, { rejectWithValue }) => {
+    try {
+      await AsyncStorage.setItem('user', JSON.stringify(user));
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to update user score');
     }
   }
 );
@@ -233,6 +246,18 @@ const authSlice = createSlice({
         state.refreshToken = action.payload.refreshToken;
       })
       .addCase(refreshToken.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Update Score
+      .addCase(updateScore.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateScore.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(updateScore.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       });

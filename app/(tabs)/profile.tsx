@@ -23,17 +23,17 @@ import { router } from "expo-router";
 export default function ProfileScreen() {
   const colorScheme = useColorScheme() || "light";
   const colors = Colors[colorScheme];
-  const { profile, user, isLoading, isAuthenticated, logout } = useAuth();
+  const { profile, user, isLoading, logout } = useAuth();
   const scrollY = React.useRef(new Animated.Value(0)).current;
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
-    if (isAuthenticated && !user) {
+    if (!user) {
       profile().catch((error) => {
         console.error("Profile error:", error);
       });
     }
-  }, [isAuthenticated, user]);
+  }, [user]);
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -163,9 +163,9 @@ export default function ProfileScreen() {
               </ThemedView>
 
               <ThemedView style={styles(colorScheme).statsContainer}>
-                <StatItem value={user.coinsCollected || 0} label="Coins" />
-                <StatItem value={user.trades || 0} label="Trades" />
-                <StatItem value={user.rank || "-"} label="Rank" />
+                <StatItem value={user.ownedCoinsCount || 6} label="Owned" />
+                <StatItem value={user.caughtCoinsCount || 6} label="Caught" />
+                <StatItem value={"-"} label="Traded" />
               </ThemedView>
             </ThemedView>
           </ThemedView>

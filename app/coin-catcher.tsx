@@ -160,24 +160,27 @@ const CoinCatcherScreen = () => {
     throwBall(velocityXFinal, velocityYFinal);
   };
 
-  // Catch coin animation
   const handleCatchCoin = async () => {
-    coinScale.value = withSpring(0, { damping: 10, stiffness: 100 });
-    coinOpacity.value = withTiming(0, { duration: 500 });
-    successEffect.value = withTiming(1, { duration: 500 });
-
-    // Play success sound
-    if (successSound.current) {
-      await successSound.current.replayAsync();
+    try {
+      coinScale.value = withSpring(0, { damping: 10, stiffness: 100 });
+      coinOpacity.value = withTiming(0, { duration: 500 });
+      successEffect.value = withTiming(1, { duration: 500 });
+  
+      // Play success sound
+      if (successSound.current) {
+        await successSound.current.replayAsync();
+      }
+  
+      // Send a catch coin event to the server
+      await catchCoin(id as string);
+    } catch (error) {
+      console.error("Failed to catch coin:", error);
+    } finally {
+      // Close the screen after 2 seconds
+      setTimeout(() => {
+        router.back();
+      }, 2000);
     }
-
-    // Send a catch coin event to the server
-    catchCoin(id as string);
-
-    // Close the screen after 2 seconds
-    setTimeout(() => {
-      router.back();
-    }, 2000);
   };
 
   // Handle miss animation

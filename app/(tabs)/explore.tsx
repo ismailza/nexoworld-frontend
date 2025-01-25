@@ -4,11 +4,14 @@ import MapView, { Marker, Region, PROVIDER_GOOGLE } from "react-native-maps";
 import { useLocation } from "@/hooks/useLocation";
 import { ThemedText } from "@/components/ThemedText";
 import { useSocket } from "@/hooks/useSocket";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CoinLocation } from "@/types/coin.types";
 import { NexoMarker } from "@/components/NexoMarker";
 import { MapLoader } from "@/components/MapLoader";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppDispatch } from "@/hooks/useAppDispatch";
+import { useAppSelector } from "@/hooks/useAppSelector";
+import { getOwnedCoins } from "@/redux/slices/coinsSlice";
 
 const DEFAULT_REGION: Region = {
   latitude: 33.697904,
@@ -20,25 +23,63 @@ const DEFAULT_REGION: Region = {
 export default function CatchMapScreen() {
   const { user } = useAuth();
   const { location, error, loading } = useLocation();
-  const { onCaughtCoinsUpdate } = useSocket();
-  const [caughtCoins, setCaughtCoins] = useState<CoinLocation[]>([]);
+  const { onOwnedCoinsUpdate, onCoinCaught } = useSocket();
+  const [ownedCoins, setOwnedCoins] = useState<CoinLocation[]>([]);
   const [mapReady, setMapReady] = useState(false);
 
+  const dispatch = useAppDispatch();
+  const coins = useAppSelector((state) => state.coins);
+
+  const handleGetOwnedCoins = useCallback(() => {
+    return dispatch(getOwnedCoins()).unwrap();
+  }, [dispatch]);
+
   useEffect(() => {
-    const unsubscribe = onCaughtCoinsUpdate((coins) => {
-      console.log("Received coins:", coins);
-      const validCoins = coins.map((coin) => ({
+    handleGetOwnedCoins().then((coins) => {
+      const validCoins = coins
+      .map((coin) => ({
         ...coin,
         latitude: parseFloat(coin.latitude.toString()),
         longitude: parseFloat(coin.longitude.toString()),
-      }));
-      setCaughtCoins(validCoins);
+      }))
+      .filter(
+        (coin) =>
+          !isNaN(coin.latitude) &&
+          !isNaN(coin.longitude) &&
+          coin.latitude >= -90 &&
+          coin.latitude <= 90 &&
+          coin.longitude >= -180 &&
+          coin.longitude <= 180
+      );
+      setOwnedCoins(validCoins);
+    });
+  }, []);
+
+  useEffect(() => {
+    // const unsubscribe = onOwnedCoinsUpdate((coins) => {
+    //   console.log("Received owned coins: ", coins.length);
+    //   const validCoins = coins.map((coin) => ({
+    //     ...coin,
+    //     latitude: parseFloat(coin.latitude.toString()),
+    //     longitude: parseFloat(coin.longitude.toString()),
+    //   }));
+    //   setOwnedCoins(validCoins);
+    // });
+
+    const unsubscribe = onCoinCaught((coin) => {
+      console.log("Received caught coin: ", coin);
+      const validCoin = {
+        ...coin,
+        latitude: parseFloat(coin.latitude.toString()),
+        longitude: parseFloat(coin.longitude.toString()),
+      };
+      setOwnedCoins((coins) => [...coins, validCoin]);
     });
 
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [location, mapReady]);
 
   if (error) {
     return (
@@ -81,7 +122,7 @@ export default function CatchMapScreen() {
           >
             <Image
               source={
-                user.avatar
+                user?.avatar
                   ? { uri: user.avatar }
                   : require("@/assets/images/male_profile.png")
               }
@@ -91,7 +132,7 @@ export default function CatchMapScreen() {
         )}
 
         {mapReady &&
-          caughtCoins.map((coinLocation) => (
+          ownedCoins.map((coinLocation) => (
             <Marker
               key={coinLocation.id}
               coordinate={{
@@ -99,6 +140,7 @@ export default function CatchMapScreen() {
                 longitude: coinLocation.longitude,
               }}
               title={`${coinLocation.coin.name} : ${coinLocation.coin.type}`}
+              description={`caught at ${coinLocation.caughtAt}`}
             >
               <NexoMarker coin={coinLocation.coin} />
             </Marker>

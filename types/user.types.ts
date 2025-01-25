@@ -10,4 +10,6 @@ export interface User {
   updatedAt: Date;
   xp: number;
   level: number;
+  ownedCoinsCount: number;
+  caughtCoinsCount: number;
 }
